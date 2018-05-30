@@ -21,6 +21,12 @@ void MedicalInformationSystem::MainView::InitializeComponent(void)
 	this->Title = (gcnew System::Windows::Forms::Label());
 	this->LoggedAs = (gcnew System::Windows::Forms::Label());
 	this->MainContent = (gcnew System::Windows::Forms::Panel());
+	this->PObservations = (gcnew System::Windows::Forms::Label());
+	this->PGender = (gcnew System::Windows::Forms::Label());
+	this->PBirthday = (gcnew System::Windows::Forms::Label());
+	this->PSurname = (gcnew System::Windows::Forms::Label());
+	this->PName = (gcnew System::Windows::Forms::Label());
+	this->ObsLabel = (gcnew System::Windows::Forms::Label());
 	this->GenderLabel = (gcnew System::Windows::Forms::Label());
 	this->BirthdayLabel = (gcnew System::Windows::Forms::Label());
 	this->SurnameLabel = (gcnew System::Windows::Forms::Label());
@@ -28,12 +34,6 @@ void MedicalInformationSystem::MainView::InitializeComponent(void)
 	this->PrevButt = (gcnew System::Windows::Forms::Button());
 	this->EditButt = (gcnew System::Windows::Forms::Button());
 	this->NextButt = (gcnew System::Windows::Forms::Button());
-	this->ObsLabel = (gcnew System::Windows::Forms::Label());
-	this->PName = (gcnew System::Windows::Forms::Label());
-	this->PSurname = (gcnew System::Windows::Forms::Label());
-	this->PBirthday = (gcnew System::Windows::Forms::Label());
-	this->PGender = (gcnew System::Windows::Forms::Label());
-	this->PObservations = (gcnew System::Windows::Forms::Label());
 	this->MainContent->SuspendLayout();
 	this->SuspendLayout();
 	// 
@@ -76,6 +76,71 @@ void MedicalInformationSystem::MainView::InitializeComponent(void)
 	this->MainContent->Name = L"MainContent";
 	this->MainContent->Size = System::Drawing::Size(784, 418);
 	this->MainContent->TabIndex = 2;
+	// 
+	// PObservations
+	// 
+	this->PObservations->AutoEllipsis = true;
+	this->PObservations->AutoSize = true;
+	this->PObservations->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+		static_cast<System::Byte>(0)));
+	this->PObservations->Location = System::Drawing::Point(19, 167);
+	this->PObservations->MaximumSize = System::Drawing::Size(740, 0);
+	this->PObservations->MinimumSize = System::Drawing::Size(740, 0);
+	this->PObservations->Name = L"PObservations";
+	this->PObservations->Size = System::Drawing::Size(740, 24);
+	this->PObservations->TabIndex = 9;
+	this->PObservations->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
+	// 
+	// PGender
+	// 
+	this->PGender->AutoSize = true;
+	this->PGender->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+		static_cast<System::Byte>(0)));
+	this->PGender->Location = System::Drawing::Point(73, 104);
+	this->PGender->Name = L"PGender";
+	this->PGender->Size = System::Drawing::Size(0, 24);
+	this->PGender->TabIndex = 8;
+	// 
+	// PBirthday
+	// 
+	this->PBirthday->AutoSize = true;
+	this->PBirthday->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+		static_cast<System::Byte>(0)));
+	this->PBirthday->Location = System::Drawing::Point(157, 73);
+	this->PBirthday->Name = L"PBirthday";
+	this->PBirthday->Size = System::Drawing::Size(0, 24);
+	this->PBirthday->TabIndex = 7;
+	// 
+	// PSurname
+	// 
+	this->PSurname->AutoSize = true;
+	this->PSurname->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+		static_cast<System::Byte>(0)));
+	this->PSurname->Location = System::Drawing::Point(127, 43);
+	this->PSurname->Name = L"PSurname";
+	this->PSurname->Size = System::Drawing::Size(0, 24);
+	this->PSurname->TabIndex = 6;
+	// 
+	// PName
+	// 
+	this->PName->AutoSize = true;
+	this->PName->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+		static_cast<System::Byte>(0)));
+	this->PName->Location = System::Drawing::Point(88, 13);
+	this->PName->Name = L"PName";
+	this->PName->Size = System::Drawing::Size(0, 24);
+	this->PName->TabIndex = 5;
+	// 
+	// ObsLabel
+	// 
+	this->ObsLabel->AutoSize = true;
+	this->ObsLabel->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+		static_cast<System::Byte>(0)));
+	this->ObsLabel->Location = System::Drawing::Point(15, 132);
+	this->ObsLabel->Name = L"ObsLabel";
+	this->ObsLabel->Size = System::Drawing::Size(112, 24);
+	this->ObsLabel->TabIndex = 4;
+	this->ObsLabel->Text = L"Observatii:";
 	// 
 	// GenderLabel
 	// 
@@ -153,71 +218,6 @@ void MedicalInformationSystem::MainView::InitializeComponent(void)
 	this->NextButt->Text = L"Pacientul urmator";
 	this->NextButt->UseVisualStyleBackColor = true;
 	this->NextButt->Click += gcnew System::EventHandler(this, &MainView::NextButt_Click);
-	// 
-	// ObsLabel
-	// 
-	this->ObsLabel->AutoSize = true;
-	this->ObsLabel->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-		static_cast<System::Byte>(0)));
-	this->ObsLabel->Location = System::Drawing::Point(15, 132);
-	this->ObsLabel->Name = L"ObsLabel";
-	this->ObsLabel->Size = System::Drawing::Size(112, 24);
-	this->ObsLabel->TabIndex = 4;
-	this->ObsLabel->Text = L"Observatii:";
-	// 
-	// PName
-	// 
-	this->PName->AutoSize = true;
-	this->PName->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-		static_cast<System::Byte>(0)));
-	this->PName->Location = System::Drawing::Point(88, 13);
-	this->PName->Name = L"PName";
-	this->PName->Size = System::Drawing::Size(0, 24);
-	this->PName->TabIndex = 5;
-	// 
-	// PSurname
-	// 
-	this->PSurname->AutoSize = true;
-	this->PSurname->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-		static_cast<System::Byte>(0)));
-	this->PSurname->Location = System::Drawing::Point(127, 43);
-	this->PSurname->Name = L"PSurname";
-	this->PSurname->Size = System::Drawing::Size(0, 24);
-	this->PSurname->TabIndex = 6;
-	// 
-	// PBirthday
-	// 
-	this->PBirthday->AutoSize = true;
-	this->PBirthday->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-		static_cast<System::Byte>(0)));
-	this->PBirthday->Location = System::Drawing::Point(157, 73);
-	this->PBirthday->Name = L"PBirthday";
-	this->PBirthday->Size = System::Drawing::Size(0, 24);
-	this->PBirthday->TabIndex = 7;
-	// 
-	// PGender
-	// 
-	this->PGender->AutoSize = true;
-	this->PGender->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-		static_cast<System::Byte>(0)));
-	this->PGender->Location = System::Drawing::Point(73, 104);
-	this->PGender->Name = L"PGender";
-	this->PGender->Size = System::Drawing::Size(0, 24);
-	this->PGender->TabIndex = 8;
-	// 
-	// PObservations
-	// 
-	this->PObservations->AutoEllipsis = true;
-	this->PObservations->AutoSize = true;
-	this->PObservations->Font = (gcnew System::Drawing::Font(L"Arial", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-		static_cast<System::Byte>(0)));
-	this->PObservations->Location = System::Drawing::Point(19, 167);
-	this->PObservations->MaximumSize = System::Drawing::Size(740, 0);
-	this->PObservations->MinimumSize = System::Drawing::Size(740, 0);
-	this->PObservations->Name = L"PObservations";
-	this->PObservations->Size = System::Drawing::Size(740, 24);
-	this->PObservations->TabIndex = 9;
-	this->PObservations->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
 	// 
 	// MainView
 	// 

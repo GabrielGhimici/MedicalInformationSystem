@@ -2,7 +2,7 @@
 
 MedicalInformationSystemServer::Doctor::Doctor() {}
 
-MedicalInformationSystemServer::Doctor::Doctor(std::string username, std::string password, std::vector<Patient> patients) {
+MedicalInformationSystemServer::Doctor::Doctor(std::string username, std::string password, std::vector<std::string> patients) {
 	this->username = username;
 	this->password = password;
 	this->patients = patients;
@@ -32,11 +32,11 @@ std::string MedicalInformationSystemServer::Doctor::getPassword() {
 	return this->password;
 }
 
-void MedicalInformationSystemServer::Doctor::setPatients(std::vector<Patient> patients) {
+void MedicalInformationSystemServer::Doctor::setPatients(std::vector<std::string> patients) {
 	this->patients = patients;
 }
 
-std::vector<MedicalInformationSystemServer::Patient> MedicalInformationSystemServer::Doctor::getPatients() {
+std::vector<std::string> MedicalInformationSystemServer::Doctor::getPatients() {
 	return this->patients;
 }
 
@@ -44,8 +44,8 @@ std::string MedicalInformationSystemServer::Doctor::toString() {
 	const std::string username = "Username~" + this->username;
 	const std::string password = "Password~" + this->password;
 	std::string patients = "Patients~";
-	for (MedicalInformationSystemServer::Patient p : this->patients) {
-		patients += p.toString();
+	for (std::string p : this->patients) {
+		patients += p;
 		patients += '^';
 	}
 	patients = patients.substr(0, patients.length() - 1);

@@ -9,16 +9,19 @@ namespace MedicalInformationSystemServer {
 	{
 	public:
 		Patient();
-		Patient(std::string name, std::string surname, std::string birthday, std::string gender, std::string observations);
+		Patient(std::string id, std::string name, std::string surname, std::string birthday, std::string gender, std::string observations);
 		Patient(const Patient&);
 		~Patient();
 	private:
+		std::string id;
 		std::string name;
 		std::string surname;
 		std::string birthday;
 		std::string gender;
 		std::string observations;
 	public:
+		void setId(std::string id);
+		std::string getId();
 		void setName(std::string name);
 		std::string getName();
 		void setSurname(std::string surname);

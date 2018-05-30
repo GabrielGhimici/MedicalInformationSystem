@@ -2,7 +2,8 @@
 
 MedicalInformationSystemServer::Patient::Patient() {}
 
-MedicalInformationSystemServer::Patient::Patient(std::string name, std::string surname, std::string birthday, std::string gender, std::string observations) {
+MedicalInformationSystemServer::Patient::Patient(std::string id, std::string name, std::string surname, std::string birthday, std::string gender, std::string observations) {
+	this->id = id;
 	this->name = name;
 	this->surname = surname;
 	this->birthday = birthday;
@@ -11,6 +12,7 @@ MedicalInformationSystemServer::Patient::Patient(std::string name, std::string s
 }
 
 MedicalInformationSystemServer::Patient::Patient(const Patient &patient) {
+	this->id = patient.id;
 	this->name = patient.name;
 	this->surname = patient.surname;
 	this->birthday = patient.birthday;
@@ -19,6 +21,14 @@ MedicalInformationSystemServer::Patient::Patient(const Patient &patient) {
 }
 
 MedicalInformationSystemServer::Patient::~Patient() {}
+
+void MedicalInformationSystemServer::Patient::setId(std::string id) {
+	this->id = id;
+}
+
+std::string MedicalInformationSystemServer::Patient::getId() {
+	return this->id;
+}
 
 void MedicalInformationSystemServer::Patient::setName(std::string name) {
 	this->name = name;
