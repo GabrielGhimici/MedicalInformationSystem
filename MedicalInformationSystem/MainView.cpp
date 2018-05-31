@@ -8,6 +8,23 @@ MedicalInformationSystem::MainView::MainView(void)
 	MedicalInformationSystem::MainView::MaximizeBox = false;
 }
 
+MedicalInformationSystem::MainView::MainView(SOCKET sock)
+{
+	InitializeComponent();
+	MedicalInformationSystem::MainView::sock = sock;
+	MedicalInformationSystem::MainView::MinimizeBox = false;
+	MedicalInformationSystem::MainView::MaximizeBox = false;
+}
+
+MedicalInformationSystem::MainView::MainView(SOCKET sock, MedicalInformationSystem::Doctor *newDoctor)
+{
+	InitializeComponent();
+	MedicalInformationSystem::MainView::sock = sock;
+	MedicalInformationSystem::MainView::currentDoctor = newDoctor;
+	MedicalInformationSystem::MainView::MinimizeBox = false;
+	MedicalInformationSystem::MainView::MaximizeBox = false;
+}
+
 MedicalInformationSystem::MainView::~MainView()
 {
 	if (components)
@@ -248,7 +265,13 @@ void MedicalInformationSystem::MainView::InitializeComponent(void)
 
 System::Void MedicalInformationSystem::MainView::MainView_Load(System::Object^  sender, System::EventArgs^  e)
 {
-
+	std::string stringToSend = "GET_INITIAL_DATA>" + this->currentDoctor->getId();
+	char buffer[5000], bufferRecv[5000];
+	sprintf(buffer, "%s", stringToSend.c_str());
+	send(this->sock, buffer, 5000, 0);
+	recv(this->sock, bufferRecv, 5000, 0);
+	System::String ^loggedAsText = gcnew System::String(("Autentificat ca: " + this->currentDoctor->getUsername()).c_str());
+	this->LoggedAs->Text = loggedAsText;
 }
 
 System::Void MedicalInformationSystem::MainView::NextButt_Click(System::Object^  sender, System::EventArgs^  e)

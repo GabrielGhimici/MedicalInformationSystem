@@ -1,5 +1,6 @@
 #include "LoginForm.h"
 #include "MainView.h"
+#include "Tokenizer.h"
 
 MedicalInformationSystem::LoginForm::LoginForm(void)
 {
@@ -107,9 +108,23 @@ System::Void MedicalInformationSystem::LoginForm::LoginButton_Click(System::Obje
 	send(this->sock, buffer, 5000, 0);
 	recv(this->sock, bufferRecv, 5000, 0);
 	System::String ^errorText = gcnew System::String(bufferRecv);
-	this->ErrorLabel->Visible = true;
-	this->ErrorLabel->Text = errorText;
-	//this->Hide();
-	//MedicalInformationSystem::MainView mainView;
-	//mainView.ShowDialog();
+	std::string checkErrorString = msclr::interop::marshal_as<std::string>(errorText);
+	std::vector<std::string> errTokens = MedicalInformationSystem::Tokenizer::tokenize(checkErrorString, '>');
+	if (errTokens[0] == "OK") {
+		this->Hide();
+		MedicalInformationSystem::MainView mainView(
+			this->sock, 
+			new MedicalInformationSystem::Doctor(
+				errTokens[1], 
+				msclr::interop::marshal_as<std::string>(this->Username->Text), 
+				msclr::interop::marshal_as<std::string>(this->Password->Text), 
+				{}
+			)
+		);
+		mainView.ShowDialog();
+	}
+	else {
+		this->ErrorLabel->Visible = true;
+		this->ErrorLabel->Text = errorText;
+	}
 }

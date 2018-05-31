@@ -1,5 +1,9 @@
 #pragma once
 
+#include <winsock2.h>
+#include <iostream>
+#include "Doctor.h"
+
 namespace MedicalInformationSystem {
 
 	using namespace System;
@@ -13,6 +17,8 @@ namespace MedicalInformationSystem {
 	{
 	public:
 		MainView(void);
+		MainView(SOCKET);
+		MainView(SOCKET, Doctor *newDoctor);
 	protected:
 		~MainView();
 	private: 
@@ -47,6 +53,10 @@ namespace MedicalInformationSystem {
 		System::Windows::Forms::Label^  PGender;
 	private: 
 		System::Windows::Forms::Label^  PBirthday;
+	private:
+		SOCKET sock;
+	private:
+		Doctor *currentDoctor;
 	private:
 		System::ComponentModel::Container ^components;
 		void InitializeComponent(void);

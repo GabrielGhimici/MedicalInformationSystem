@@ -2,19 +2,29 @@
 
 MedicalInformationSystem::Doctor::Doctor() {}
 
-MedicalInformationSystem::Doctor::Doctor(std::string username, std::string password, std::vector<Patient> patients) {
+MedicalInformationSystem::Doctor::Doctor(std::string id, std::string username, std::string password, std::vector<Patient> patients) {
+	this->id = id;
 	this->username = username;
 	this->password = password;
 	this->patients = patients;
 }
 
 MedicalInformationSystem::Doctor::Doctor(const Doctor &doctor) {
+	this->id = doctor.id;
 	this->username = doctor.username;
 	this->password = doctor.password;
 	this->patients = doctor.patients;
 }
 
 MedicalInformationSystem::Doctor::~Doctor() {}
+
+void MedicalInformationSystem::Doctor::setId(std::string id) {
+	this->id = id;
+}
+
+std::string MedicalInformationSystem::Doctor::getId() {
+	return this->id;
+}
 
 void MedicalInformationSystem::Doctor::setUsername(std::string username) {
 	this->username = username;
@@ -41,6 +51,7 @@ std::vector<MedicalInformationSystem::Patient> MedicalInformationSystem::Doctor:
 }
 
 std::string MedicalInformationSystem::Doctor::toString() {
+	const std::string id = "Id~" + this->id;
 	const std::string username = "Username~" + this->username;
 	const std::string password = "Password~" + this->password;
 	std::string patients = "Patients~";
@@ -49,5 +60,5 @@ std::string MedicalInformationSystem::Doctor::toString() {
 		patients += '^';
 	}
 	patients = patients.substr(0, patients.length() - 1);
-	return username + "#" + password + "#" + patients;
+	return id + "#" + username + "#" + password + "#" + patients;
 }

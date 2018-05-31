@@ -2,6 +2,7 @@
 
 #include <winsock2.h>
 #include <iostream>
+#include <msclr\marshal_cppstd.h>
 
 namespace MedicalInformationSystem {
 	

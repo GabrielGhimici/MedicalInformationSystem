@@ -66,10 +66,11 @@ std::string MedicalInformationSystemServer::Patient::getObservations() {
 }
 
 std::string MedicalInformationSystemServer::Patient::toString() {
+	const std::string id = "Id%" + this->id;
 	const std::string name = "Name%" + this->name;
 	const std::string surname = "Surname%" + this->surname;
 	const std::string birthday = "Birthday%" + this->birthday;
 	const std::string gender = "Gender%" + this->gender;
 	const std::string observations = "Observaions%" + this->observations;
-	return name + "`" + surname + "`" + birthday + "`" + gender + "`" + observations;
+	return id + "`" + name + "`" + surname + "`" + birthday + "`" + gender + "`" + observations;
 }
