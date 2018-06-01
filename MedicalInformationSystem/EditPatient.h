@@ -1,5 +1,10 @@
 #pragma once
 
+#include <winsock2.h>
+#include <iostream>
+#include "Doctor.h"
+#include "Patient.h"
+
 namespace MedicalInformationSystem {
 
 	using namespace System;
@@ -13,6 +18,8 @@ namespace MedicalInformationSystem {
 	{
 	public:
 		EditPatient(void);
+		EditPatient(SOCKET sock);
+		EditPatient(SOCKET sock, Doctor *doctor, std::string patientId);
 	protected:
 		~EditPatient();
 	private: 
@@ -43,8 +50,17 @@ namespace MedicalInformationSystem {
 		System::Windows::Forms::TextBox^  PBirthday;
 	private: 
 		System::Windows::Forms::TextBox^  PSurname;
-	private: 
-		System::Windows::Forms::TextBox^  PObsevations;
+	private: System::Windows::Forms::TextBox^  PObservations;
+	private:
+
+	private:
+		SOCKET sock;
+	private:
+		Doctor *currentDoctor;
+	private:
+		System::String ^patientId;
+	private:
+		Patient *currentPatient;
 	private:
 		System::ComponentModel::Container ^components;
 		void InitializeComponent(void);
@@ -52,5 +68,7 @@ namespace MedicalInformationSystem {
 		System::Void SaveButt_Click(System::Object^  sender, System::EventArgs^  e);
 	private: 
 		System::Void BackButt_Click(System::Object^  sender, System::EventArgs^  e);
-};
+	private: 
+		System::Void EditPatient_Load(System::Object^  sender, System::EventArgs^  e);
+	};
 }

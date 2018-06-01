@@ -17,8 +17,8 @@ namespace MedicalInformationSystem {
 	{
 	public:
 		MainView(void);
-		MainView(SOCKET);
-		MainView(SOCKET, Doctor *newDoctor);
+		MainView(SOCKET sock);
+		MainView(SOCKET sock, Doctor *newDoctor);
 	protected:
 		~MainView();
 	private: 
@@ -58,6 +58,8 @@ namespace MedicalInformationSystem {
 	private:
 		Doctor *currentDoctor;
 	private:
+		int patientIndex;
+	private:
 		System::ComponentModel::Container ^components;
 		void InitializeComponent(void);
 	private: 
@@ -68,5 +70,7 @@ namespace MedicalInformationSystem {
 		System::Void PrevButt_Click(System::Object^  sender, System::EventArgs^  e);
 	private:
 		System::Void EditButt_Click(System::Object^  sender, System::EventArgs^  e);
+	private:
+		System::Void setupPatientView();
 };
 }

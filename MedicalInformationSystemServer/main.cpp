@@ -21,7 +21,7 @@ int processDoctors(std::vector<std::string> ids);
 int processPatients(std::vector<std::string> ids);
 int processInitialFile();
 
-enum InternalMessages {UNDEFINED_MESSAGE, LOGIN_MESSAGE, GET_INITIAL_DATA};
+enum InternalMessages {UNDEFINED_MESSAGE, LOGIN_MESSAGE, GET_INITIAL_DATA, GET_PATIENT};
 
 inline std::string ToString(InternalMessages message)
 {
@@ -31,6 +31,8 @@ inline std::string ToString(InternalMessages message)
 		return "LOGIN";
 	case GET_INITIAL_DATA:
 		return "GET_INITIAL_DATA";
+	case GET_PATIENT:
+		return "GET_PATIENT";
 	default:      
 		return "[UM]";
 	}
@@ -40,6 +42,7 @@ inline InternalMessages FromString(std::string str)
 {
 	if (str == "LOGIN") return LOGIN_MESSAGE;
 	if (str == "GET_INITIAL_DATA") return GET_INITIAL_DATA;
+	if (str == "GET_PATIENT") return GET_PATIENT;
 	return UNDEFINED_MESSAGE;
 }
 
@@ -117,6 +120,7 @@ unsigned int __stdcall ServClient(void *data)
 	std::string doctorId;
 	std::vector<std::string> patientIdList;
 	std::string patientsInformation;
+	std::string patientInfo;
 	while (recv(Client, chunk, 5000, 0))
 	{
 		std::string message(chunk);
@@ -132,25 +136,32 @@ unsigned int __stdcall ServClient(void *data)
 			for (int i = 0; i < doctorProperties.size(); i++) {
 				doctorDetails[i] = MedicalInformationSystemServer::Tokenizer::tokenize(doctorProperties[i], '~');
 			}
-			doctorExists = false;
-			doctorId = "";
-			for (MedicalInformationSystemServer::Doctor d : doctors) {
-				if (d.getUsername() == doctorDetails[0][1] && d.getPassword() == doctorDetails[1][1]) {
-					doctorExists = true;
-					doctorId = d.getId();
-					break;
-				}
-			}
 			char logingResponse[5000];
-			if (doctorExists == true) {
-				sprintf(logingResponse, "%s>%s", "OK", doctorId.c_str());
+			if (doctorDetails[0].size() < 2 || doctorDetails[1].size() < 2) {
+				sprintf(logingResponse, "%s>%s", "NOT_OK", "Completati username-ul si parola pentru a va autentifica");
 				std::cout << ">>> Response send... OK" << std::endl;
 				send(Client, logingResponse, 5000, 0);
 			}
 			else {
-				sprintf(logingResponse, "Login informations are invalid!");
-				std::cout << ">>> Response send... NOT_OK" << std::endl;
-				send(Client, logingResponse, 5000, 0);
+				doctorExists = false;
+				doctorId = "";
+				for (MedicalInformationSystemServer::Doctor d : doctors) {
+					if (d.getUsername() == doctorDetails[0][1] && d.getPassword() == doctorDetails[1][1]) {
+						doctorExists = true;
+						doctorId = d.getId();
+						break;
+					}
+				}
+				if (doctorExists == true) {
+					sprintf(logingResponse, "%s>%s", "OK", doctorId.c_str());
+					std::cout << ">>> Response send... OK" << std::endl;
+					send(Client, logingResponse, 5000, 0);
+				}
+				else {
+					sprintf(logingResponse, "%s>%s", "NOT_OK", "Informatiile de login sunt invalide!");
+					std::cout << ">>> Response send... NOT_OK" << std::endl;
+					send(Client, logingResponse, 5000, 0);
+				}
 			}
 			break;
 		case GET_INITIAL_DATA:
@@ -164,13 +175,24 @@ unsigned int __stdcall ServClient(void *data)
 			patientsInformation = "";
 			for (std::string id : patientIdList) {
 				patientsInformation = patientsInformation + patients[id].toString();
-				patientsInformation = patientsInformation + "~";
+				patientsInformation = patientsInformation + "^";
 			}
 			patientsInformation = patientsInformation.substr(0, patientsInformation.length() - 1);
-			char infoResponse[5000];
+			char infoResponse[100000];
 			sprintf(infoResponse, "%s", patientsInformation.c_str());
+			std::cout << ">>> Response send... PATIENTS INFO" << std::endl;
+			send(Client, infoResponse, 100000, 0);
+			break;
+		case GET_PATIENT:
+			std::cout << ">>> Get patient info for: " << messageTokens[1].c_str() << std::endl;
+			patientInfo = "NONE";
+			if (patients.find(messageTokens[1]) != patients.end()) {
+				patientInfo = patients[messageTokens[1]].toString();
+			}
+			char patientResponse[100000];
+			sprintf(infoResponse, "%s", patientInfo.c_str());
 			std::cout << ">>> Response send... PATIENT INFO" << std::endl;
-			send(Client, infoResponse, 5000, 0);
+			send(Client, infoResponse, 100000, 0);
 			break;
 		default:
 			break;

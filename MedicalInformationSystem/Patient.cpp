@@ -66,10 +66,25 @@ std::string MedicalInformationSystem::Patient::getObservations() {
 }
 
 std::string MedicalInformationSystem::Patient::toString() {
+	const std::string id = "Id%" + this->id;
 	const std::string name = "Name%" + this->name;
 	const std::string surname = "Surname%" + this->surname;
 	const std::string birthday = "Birthday%" + this->birthday;
 	const std::string gender = "Gender%" + this->gender;
-	const std::string observations = "Observaions%" + this->observations;
-	return name + "`" + surname + "`" + birthday + "`" + gender + "`" + observations;
+	const std::string observations = "Observations%" + this->observations;
+	return id + "`" + name + "`" + surname + "`" + birthday + "`" + gender + "`" + observations;
+}
+
+void MedicalInformationSystem::Patient::fromString(std::string patientData) {
+	std::vector<std::string> patientTokens = MedicalInformationSystem::Tokenizer::tokenize(patientData, '`');
+	if (patientTokens.size() < 6) {
+		System::Diagnostics::Debug::WriteLine("Imposible to populate patient");
+		return;
+	}
+	this->id = MedicalInformationSystem::Tokenizer::tokenize(patientTokens[0], '%')[1];
+	this->name = MedicalInformationSystem::Tokenizer::tokenize(patientTokens[1], '%')[1];
+	this->surname = MedicalInformationSystem::Tokenizer::tokenize(patientTokens[2], '%')[1];
+	this->birthday = MedicalInformationSystem::Tokenizer::tokenize(patientTokens[3], '%')[1];
+	this->gender = MedicalInformationSystem::Tokenizer::tokenize(patientTokens[4], '%')[1];
+	this->observations = MedicalInformationSystem::Tokenizer::tokenize(patientTokens[5], '%')[1];
 }

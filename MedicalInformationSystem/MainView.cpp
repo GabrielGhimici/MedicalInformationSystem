@@ -4,6 +4,7 @@
 MedicalInformationSystem::MainView::MainView(void)
 {
 	InitializeComponent();
+	MedicalInformationSystem::MainView::patientIndex = 0;
 	MedicalInformationSystem::MainView::MinimizeBox = false;
 	MedicalInformationSystem::MainView::MaximizeBox = false;
 }
@@ -11,6 +12,7 @@ MedicalInformationSystem::MainView::MainView(void)
 MedicalInformationSystem::MainView::MainView(SOCKET sock)
 {
 	InitializeComponent();
+	MedicalInformationSystem::MainView::patientIndex = 0;
 	MedicalInformationSystem::MainView::sock = sock;
 	MedicalInformationSystem::MainView::MinimizeBox = false;
 	MedicalInformationSystem::MainView::MaximizeBox = false;
@@ -19,6 +21,7 @@ MedicalInformationSystem::MainView::MainView(SOCKET sock)
 MedicalInformationSystem::MainView::MainView(SOCKET sock, MedicalInformationSystem::Doctor *newDoctor)
 {
 	InitializeComponent();
+	MedicalInformationSystem::MainView::patientIndex = 0;
 	MedicalInformationSystem::MainView::sock = sock;
 	MedicalInformationSystem::MainView::currentDoctor = newDoctor;
 	MedicalInformationSystem::MainView::MinimizeBox = false;
@@ -213,6 +216,7 @@ void MedicalInformationSystem::MainView::InitializeComponent(void)
 	this->PrevButt->Text = L"Pacientul anterior";
 	this->PrevButt->UseVisualStyleBackColor = true;
 	this->PrevButt->Click += gcnew System::EventHandler(this, &MainView::PrevButt_Click);
+	this->PrevButt->Enabled = false;
 	// 
 	// EditButt
 	// 
@@ -266,27 +270,81 @@ void MedicalInformationSystem::MainView::InitializeComponent(void)
 System::Void MedicalInformationSystem::MainView::MainView_Load(System::Object^  sender, System::EventArgs^  e)
 {
 	std::string stringToSend = "GET_INITIAL_DATA>" + this->currentDoctor->getId();
-	char buffer[5000], bufferRecv[5000];
+	char buffer[5000], bufferRecv[100000];
 	sprintf(buffer, "%s", stringToSend.c_str());
 	send(this->sock, buffer, 5000, 0);
-	recv(this->sock, bufferRecv, 5000, 0);
+	recv(this->sock, bufferRecv, 100000, 0);
+	std::string responseToProcess(bufferRecv);
+	std::vector<std::string> patientInfo = MedicalInformationSystem::Tokenizer::tokenize(responseToProcess, '^');
+	std::vector<MedicalInformationSystem::Patient> patients = {};
+	for (std::string s : patientInfo) {
+		MedicalInformationSystem::Patient p = MedicalInformationSystem::Patient();
+		p.fromString(s);
+		patients.push_back(p);
+	}
+	this->currentDoctor->setPatients(patients);
 	System::String ^loggedAsText = gcnew System::String(("Autentificat ca: " + this->currentDoctor->getUsername()).c_str());
 	this->LoggedAs->Text = loggedAsText;
+	this->setupPatientView();
 }
 
 System::Void MedicalInformationSystem::MainView::NextButt_Click(System::Object^  sender, System::EventArgs^  e)
 {
-
+	int futureIndex = this->patientIndex + 1;
+	if (futureIndex >= this->currentDoctor->getPatients().size()) {
+		this->NextButt->Enabled = false;
+	}
+	else {
+		this->patientIndex++;
+		this->setupPatientView();
+		if (this->PrevButt->Enabled == false) {
+			this->PrevButt->Enabled = true;
+		}
+	}
 }
 
 System::Void MedicalInformationSystem::MainView::PrevButt_Click(System::Object^  sender, System::EventArgs^  e)
 {
-
+	int previousIndex = this->patientIndex - 1;
+	if (previousIndex < 0) {
+		this->PrevButt->Enabled = false;
+	}
+	else {
+		this->patientIndex--;
+		this->setupPatientView();
+		if (this->NextButt->Enabled == false) {
+			this->NextButt->Enabled = true;
+		}
+	}
 }
 
 System::Void MedicalInformationSystem::MainView::EditButt_Click(System::Object^  sender, System::EventArgs^  e)
 {
+
 	this->Hide();
-	MedicalInformationSystem::EditPatient editPatient;
+	MedicalInformationSystem::EditPatient editPatient(
+		this->sock,
+		new MedicalInformationSystem::Doctor(
+			this->currentDoctor->getId(),
+			this->currentDoctor->getUsername(),
+			this->currentDoctor->getPassword(),
+			{}
+		),
+		this->currentDoctor->getPatients()[this->patientIndex].getId()
+	);
 	editPatient.ShowDialog();
+}
+
+System::Void MedicalInformationSystem::MainView::setupPatientView() {
+	MedicalInformationSystem::Patient p = this->currentDoctor->getPatients()[this->patientIndex];
+	System::String ^name = gcnew System::String(p.getName().c_str());
+	System::String ^surname = gcnew System::String(p.getSurname().c_str());
+	System::String ^birthdate = gcnew System::String(p.getBirthday().c_str());
+	System::String ^gender = gcnew System::String(p.getGender().c_str());
+	System::String ^obs = gcnew System::String(p.getObservations().c_str());
+	this->PName->Text = name;
+	this->PSurname->Text = surname;
+	this->PBirthday->Text = birthdate;
+	this->PGender->Text = gender;
+	this->PObservations->Text = obs;
 }

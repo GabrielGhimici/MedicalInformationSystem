@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include "Patient.h"
+#include "Tokenizer.h"
 
 namespace MedicalInformationSystem {
 	class Doctor
@@ -19,6 +20,7 @@ namespace MedicalInformationSystem {
 		std::string password;
 		std::vector<Patient> patients;
 	public:
+		void fromString(std::string docString);
 		void setId(std::string id);
 		std::string getId();
 		void setUsername(std::string username);

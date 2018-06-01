@@ -1,9 +1,30 @@
 #include "EditPatient.h"
 #include "MainView.h"
+#include <msclr\marshal_cppstd.h>
 
 MedicalInformationSystem::EditPatient::EditPatient(void)
 {
 	InitializeComponent();
+	MedicalInformationSystem::EditPatient::MinimizeBox = false;
+	MedicalInformationSystem::EditPatient::MaximizeBox = false;
+}
+
+MedicalInformationSystem::EditPatient::EditPatient(SOCKET sock)
+{
+	InitializeComponent();
+	MedicalInformationSystem::EditPatient::sock = sock;
+	MedicalInformationSystem::EditPatient::MinimizeBox = false;
+	MedicalInformationSystem::EditPatient::MaximizeBox = false;
+}
+
+MedicalInformationSystem::EditPatient::EditPatient(SOCKET sock, MedicalInformationSystem::Doctor *doctor, std::string patientId)
+{
+	InitializeComponent();
+	MedicalInformationSystem::EditPatient::sock = sock;
+	MedicalInformationSystem::EditPatient::currentDoctor = doctor;
+	MedicalInformationSystem::EditPatient::patientId = gcnew System::String(patientId.c_str());
+	MedicalInformationSystem::EditPatient::MinimizeBox = false;
+	MedicalInformationSystem::EditPatient::MaximizeBox = false;
 }
 
 MedicalInformationSystem::EditPatient::~EditPatient()
@@ -30,7 +51,7 @@ void MedicalInformationSystem::EditPatient::InitializeComponent(void)
 	this->PGender = (gcnew System::Windows::Forms::TextBox());
 	this->PBirthday = (gcnew System::Windows::Forms::TextBox());
 	this->PSurname = (gcnew System::Windows::Forms::TextBox());
-	this->PObsevations = (gcnew System::Windows::Forms::TextBox());
+	this->PObservations = (gcnew System::Windows::Forms::TextBox());
 	this->SuspendLayout();
 	// 
 	// LoggedAs
@@ -169,22 +190,22 @@ void MedicalInformationSystem::EditPatient::InitializeComponent(void)
 	this->PSurname->Size = System::Drawing::Size(577, 20);
 	this->PSurname->TabIndex = 16;
 	// 
-	// PObsevations
+	// PObservations
 	// 
-	this->PObsevations->AcceptsReturn = true;
-	this->PObsevations->Location = System::Drawing::Point(140, 231);
-	this->PObsevations->Multiline = true;
-	this->PObsevations->Name = L"PObsevations";
-	this->PObsevations->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
-	this->PObsevations->Size = System::Drawing::Size(577, 239);
-	this->PObsevations->TabIndex = 17;
+	this->PObservations->AcceptsReturn = true;
+	this->PObservations->Location = System::Drawing::Point(140, 231);
+	this->PObservations->Multiline = true;
+	this->PObservations->Name = L"PObservations";
+	this->PObservations->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
+	this->PObservations->Size = System::Drawing::Size(577, 239);
+	this->PObservations->TabIndex = 17;
 	// 
 	// EditPatient
 	// 
 	this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 	this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 	this->ClientSize = System::Drawing::Size(784, 561);
-	this->Controls->Add(this->PObsevations);
+	this->Controls->Add(this->PObservations);
 	this->Controls->Add(this->PSurname);
 	this->Controls->Add(this->PBirthday);
 	this->Controls->Add(this->PGender);
@@ -205,19 +226,63 @@ void MedicalInformationSystem::EditPatient::InitializeComponent(void)
 	this->Name = L"EditPatient";
 	this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
 	this->Text = L"EditPatient";
+	this->Load += gcnew System::EventHandler(this, &EditPatient::EditPatient_Load);
 	this->ResumeLayout(false);
 	this->PerformLayout();
+
+}
+
+System::Void MedicalInformationSystem::EditPatient::EditPatient_Load(System::Object^  sender, System::EventArgs^  e) {
+	std::string processedPatientId = msclr::interop::marshal_as<std::string>(%*(this->patientId));
+	std::string stringToSend = "GET_PATIENT>" + processedPatientId;
+	char buffer[5000], bufferRecv[100000];
+	sprintf(buffer, "%s", stringToSend.c_str());
+	send(this->sock, buffer, 5000, 0);
+	recv(this->sock, bufferRecv, 100000, 0);
+	std::string responseToProcess(bufferRecv);
+	this->currentPatient = new MedicalInformationSystem::Patient();
+	this->currentPatient->fromString(responseToProcess);
+	System::String ^loggedAsText = gcnew System::String(("Autentificat ca: " + this->currentDoctor->getUsername()).c_str());
+	this->LoggedAs->Text = loggedAsText;
+	System::String ^currentPatientName = gcnew System::String(("Pacient: " + this->currentPatient->getName() + " " + this->currentPatient->getSurname()).c_str());;
+	this->PatientLabel->Text = currentPatientName;
+	System::String ^name = gcnew System::String(this->currentPatient->getName().c_str());
+	System::String ^surname = gcnew System::String(this->currentPatient->getSurname().c_str());
+	System::String ^birthdate = gcnew System::String(this->currentPatient->getBirthday().c_str());
+	System::String ^gender = gcnew System::String(this->currentPatient->getGender().c_str());
+	System::String ^obs = gcnew System::String(this->currentPatient->getObservations().c_str());
+	this->PName->Text = name;
+	this->PSurname->Text = surname;
+	this->PBirthday->Text = birthdate;
+	this->PGender->Text = gender;
+	this->PObservations->Text = obs;
 }
 
 System::Void MedicalInformationSystem::EditPatient::SaveButt_Click(System::Object^  sender, System::EventArgs^  e) {
 	this->Hide();
-	MedicalInformationSystem::MainView mainView;
+	MedicalInformationSystem::MainView mainView(
+		this->sock,
+		new MedicalInformationSystem::Doctor(
+			this->currentDoctor->getId(),
+			this->currentDoctor->getUsername(),
+			this->currentDoctor->getPassword(),
+			{}
+		)
+	);
 	mainView.ShowDialog();
 }
 
 System::Void MedicalInformationSystem::EditPatient::BackButt_Click(System::Object^  sender, System::EventArgs^  e)
 {
 	this->Hide();
-	MedicalInformationSystem::MainView mainView;
+	MedicalInformationSystem::MainView mainView(
+		this->sock,
+		new MedicalInformationSystem::Doctor(
+			this->currentDoctor->getId(),
+			this->currentDoctor->getUsername(),
+			this->currentDoctor->getPassword(),
+			{}
+		)
+	);
 	mainView.ShowDialog();
 }

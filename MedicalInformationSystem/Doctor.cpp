@@ -62,3 +62,21 @@ std::string MedicalInformationSystem::Doctor::toString() {
 	patients = patients.substr(0, patients.length() - 1);
 	return id + "#" + username + "#" + password + "#" + patients;
 }
+
+void MedicalInformationSystem::Doctor::fromString(std::string docString) {
+	std::vector<std::string> doctorTokens = MedicalInformationSystem::Tokenizer::tokenize(docString, '#');
+	if (doctorTokens.size() < 4) {
+		System::Diagnostics::Debug::WriteLine("Imposible to populate doctor");
+		return;
+	}
+	this->id = MedicalInformationSystem::Tokenizer::tokenize(doctorTokens[0], '~')[1];
+	this->username = MedicalInformationSystem::Tokenizer::tokenize(doctorTokens[1], '~')[1];
+	this->password = MedicalInformationSystem::Tokenizer::tokenize(doctorTokens[2], '~')[1];
+	this->patients = {};
+	std::vector<std::string> patientsInfo = MedicalInformationSystem::Tokenizer::tokenize(doctorTokens[3], '~');
+	for(std::string s: patientsInfo) {
+		MedicalInformationSystem::Patient p = MedicalInformationSystem::Patient();
+		p.fromString(s);
+		this->patients.push_back(p);
+	}
+}

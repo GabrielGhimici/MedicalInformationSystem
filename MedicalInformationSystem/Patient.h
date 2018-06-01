@@ -3,6 +3,8 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
+#include "Tokenizer.h"
 
 namespace MedicalInformationSystem {
 	class Patient
@@ -33,6 +35,7 @@ namespace MedicalInformationSystem {
 		void setObservations(std::string observations);
 		std::string getObservations();
 		std::string toString();
+		void fromString(std::string patientData);
 	};
 }
 #endif
