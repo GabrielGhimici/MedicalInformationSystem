@@ -18,6 +18,7 @@ namespace MedicalInformationSystemServer {
 		std::string password;
 		std::vector<std::string> patients;
 	public:
+		void fromString(std::string docString);
 		void setId(std::string id);
 		std::string getId();
 		void setUsername(std::string username);

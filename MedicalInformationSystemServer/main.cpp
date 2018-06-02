@@ -20,8 +20,9 @@ unsigned int __stdcall  ServClient(void *data);
 int processDoctors(std::vector<std::string> ids);
 int processPatients(std::vector<std::string> ids);
 int processInitialFile();
+int persistPatient(MedicalInformationSystemServer::Patient *p);
 
-enum InternalMessages {UNDEFINED_MESSAGE, LOGIN_MESSAGE, GET_INITIAL_DATA, GET_PATIENT};
+enum InternalMessages {UNDEFINED_MESSAGE, LOGIN_MESSAGE, GET_INITIAL_DATA, GET_PATIENT, UPDATE_PATIENT};
 
 inline std::string ToString(InternalMessages message)
 {
@@ -33,6 +34,8 @@ inline std::string ToString(InternalMessages message)
 		return "GET_INITIAL_DATA";
 	case GET_PATIENT:
 		return "GET_PATIENT";
+	case UPDATE_PATIENT:
+		return "UPDATE_PATIENT";
 	default:      
 		return "[UM]";
 	}
@@ -43,6 +46,7 @@ inline InternalMessages FromString(std::string str)
 	if (str == "LOGIN") return LOGIN_MESSAGE;
 	if (str == "GET_INITIAL_DATA") return GET_INITIAL_DATA;
 	if (str == "GET_PATIENT") return GET_PATIENT;
+	if (str == "UPDATE_PATIENT") return UPDATE_PATIENT;
 	return UNDEFINED_MESSAGE;
 }
 
@@ -113,7 +117,7 @@ unsigned int __stdcall ServClient(void *data)
 	SOCKET* client = (SOCKET*)data;
 	SOCKET Client = *client;
 	std::cout << "Client connected " << GetCurrentThreadId() << std::endl;
-	char chunk[5000];
+	char chunk[100000];
 	std::vector<std::string> doctorProperties(2, "");
 	std::vector<std::vector<std::string>> doctorDetails(2, {"",""});
 	bool doctorExists;
@@ -121,7 +125,8 @@ unsigned int __stdcall ServClient(void *data)
 	std::vector<std::string> patientIdList;
 	std::string patientsInformation;
 	std::string patientInfo;
-	while (recv(Client, chunk, 5000, 0))
+	std::string patientData;
+	while (recv(Client, chunk, 100000, 0))
 	{
 		std::string message(chunk);
 		std::vector<std::string> messageTokens = MedicalInformationSystemServer::Tokenizer::tokenize(message, '>');
@@ -194,6 +199,32 @@ unsigned int __stdcall ServClient(void *data)
 			std::cout << ">>> Response send... PATIENT INFO" << std::endl;
 			send(Client, infoResponse, 100000, 0);
 			break;
+		case UPDATE_PATIENT:
+			std::cout << ">>> Update patient info with: " << messageTokens[1].c_str() << std::endl;
+			patientData = messageTokens[1];
+			char updatePatientResponse[100000];
+			if (patientData.size() == 0) {
+				sprintf(updatePatientResponse, "%s", "NOT_OK");
+				std::cout << ">>> Response send... PATIENT UPDATE[FAIL]" << std::endl;
+				send(Client, updatePatientResponse, 100000, 0);
+			}
+			else {
+				MedicalInformationSystemServer::Patient *tempPatient = new MedicalInformationSystemServer::Patient();
+				tempPatient->fromString(patientData);
+				std::cout << ">>> Current Patient Data: " << patients[tempPatient->getId()].toString() << std::endl;
+				patients[tempPatient->getId()].setName(tempPatient->getName());
+				patients[tempPatient->getId()].setSurname(tempPatient->getSurname());
+				patients[tempPatient->getId()].setBirthday(tempPatient->getBirthday());
+				patients[tempPatient->getId()].setGender(tempPatient->getGender());
+				patients[tempPatient->getId()].setObservations(tempPatient->getObservations());
+				std::cout << ">>> Updated Patient Data: " << patients[tempPatient->getId()].toString() << std::endl;
+				sprintf(updatePatientResponse, "%s", "OK");
+				persistPatient(tempPatient);
+				std::cout << ">>> Response send... PATIENT UPDATE[SUCESS]" << std::endl;
+				send(Client, updatePatientResponse, 100000, 0);
+			}
+
+			break;
 		default:
 			break;
 		}
@@ -265,16 +296,19 @@ int processPatients(std::vector<std::string> ids) {
 	for (std::string id : ids) {
 		std::ifstream pat(basePath + id + ".txt");
 		if (pat) {
-			std::string name;
-			std::string surname;
-			std::string birthday;
-			std::string gender;
-			std::string observations;
+			std::string name = "";
+			std::string surname = "";
+			std::string birthday = "";
+			std::string gender = "";
+			std::string observations = "";
 			std::getline(pat, name);
 			std::getline(pat, surname);
 			std::getline(pat, birthday);
 			std::getline(pat, gender);
-			std::getline(pat, observations);
+			std::string temp = "";
+			while (std::getline(pat, temp)) {
+				observations = observations + temp;
+			}
 			if (name.length() == 0 || surname.length() == 0 || birthday.length() == 0 || gender.length() == 0 || observations.length() == 0) {
 				std::cout << ">>> One(more) information(s) for a patient is(are) incomplete..." << std::endl;
 				return -1;
@@ -293,4 +327,21 @@ int processPatients(std::vector<std::string> ids) {
 	}
 	*/
 	return 0;
+}
+
+int persistPatient(MedicalInformationSystemServer::Patient *p) {
+	const std::string basePath = "../resources/patient/";
+	std::ofstream pat(basePath + p->getId() + ".txt");
+	if (pat) {
+		pat << p->getName() << std::endl;
+		pat << p->getSurname() << std::endl;
+		pat << p->getBirthday() << std::endl;
+		pat << p->getGender() << std::endl;
+		pat << p->getObservations();
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
 }

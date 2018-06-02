@@ -4,6 +4,7 @@
 #include <iostream>
 #include "Doctor.h"
 #include "Patient.h"
+#include "MainView.h"
 
 namespace MedicalInformationSystem {
 
@@ -19,7 +20,8 @@ namespace MedicalInformationSystem {
 	public:
 		EditPatient(void);
 		EditPatient(SOCKET sock);
-		EditPatient(SOCKET sock, Doctor *doctor, std::string patientId);
+		EditPatient(SOCKET sock, Doctor *doctor, std::string patientId, MainView ^parent);
+
 	protected:
 		~EditPatient();
 	private: 
@@ -52,7 +54,7 @@ namespace MedicalInformationSystem {
 		System::Windows::Forms::TextBox^  PSurname;
 	private: System::Windows::Forms::TextBox^  PObservations;
 	private:
-
+		MainView ^parent;
 	private:
 		SOCKET sock;
 	private:

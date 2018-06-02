@@ -1,4 +1,5 @@
 #include "Patient.h"
+#include "Tokenizer.h"
 
 MedicalInformationSystemServer::Patient::Patient() {}
 
@@ -66,11 +67,25 @@ std::string MedicalInformationSystemServer::Patient::getObservations() {
 }
 
 std::string MedicalInformationSystemServer::Patient::toString() {
-	const std::string id = "Id%" + this->id;
-	const std::string name = "Name%" + this->name;
-	const std::string surname = "Surname%" + this->surname;
-	const std::string birthday = "Birthday%" + this->birthday;
-	const std::string gender = "Gender%" + this->gender;
-	const std::string observations = "Observaions%" + this->observations;
+	const std::string id = "Id&" + this->id;
+	const std::string name = "Name&" + this->name;
+	const std::string surname = "Surname&" + this->surname;
+	const std::string birthday = "Birthday&" + this->birthday;
+	const std::string gender = "Gender&" + this->gender;
+	const std::string observations = "Observaions&" + this->observations;
 	return id + "`" + name + "`" + surname + "`" + birthday + "`" + gender + "`" + observations;
+}
+
+void MedicalInformationSystemServer::Patient::fromString(std::string patientData) {
+	std::vector<std::string> patientTokens = MedicalInformationSystemServer::Tokenizer::tokenize(patientData, '`');
+	if (patientTokens.size() < 6) {
+		std::cout << ">>> Imposible to populate patient..." << std::endl;
+		return;
+	}
+	this->id = MedicalInformationSystemServer::Tokenizer::tokenize(patientTokens[0], '&')[1];
+	this->name = MedicalInformationSystemServer::Tokenizer::tokenize(patientTokens[1], '&')[1];
+	this->surname = MedicalInformationSystemServer::Tokenizer::tokenize(patientTokens[2], '&')[1];
+	this->birthday = MedicalInformationSystemServer::Tokenizer::tokenize(patientTokens[3], '&')[1];
+	this->gender = MedicalInformationSystemServer::Tokenizer::tokenize(patientTokens[4], '&')[1];
+	this->observations = MedicalInformationSystemServer::Tokenizer::tokenize(patientTokens[5], '&')[1];
 }

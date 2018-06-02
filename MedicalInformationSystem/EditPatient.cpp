@@ -17,11 +17,12 @@ MedicalInformationSystem::EditPatient::EditPatient(SOCKET sock)
 	MedicalInformationSystem::EditPatient::MaximizeBox = false;
 }
 
-MedicalInformationSystem::EditPatient::EditPatient(SOCKET sock, MedicalInformationSystem::Doctor *doctor, std::string patientId)
+MedicalInformationSystem::EditPatient::EditPatient(SOCKET sock, MedicalInformationSystem::Doctor *doctor, std::string patientId, MedicalInformationSystem::MainView ^parent)
 {
 	InitializeComponent();
 	MedicalInformationSystem::EditPatient::sock = sock;
 	MedicalInformationSystem::EditPatient::currentDoctor = doctor;
+	MedicalInformationSystem::EditPatient::parent = parent;
 	MedicalInformationSystem::EditPatient::patientId = gcnew System::String(patientId.c_str());
 	MedicalInformationSystem::EditPatient::MinimizeBox = false;
 	MedicalInformationSystem::EditPatient::MaximizeBox = false;
@@ -92,11 +93,13 @@ void MedicalInformationSystem::EditPatient::InitializeComponent(void)
 	this->ObsLabel->AutoSize = true;
 	this->ObsLabel->Font = (gcnew System::Drawing::Font(L"Arial", 14.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 		static_cast<System::Byte>(0)));
-	this->ObsLabel->Location = System::Drawing::Point(34, 227);
+	this->ObsLabel->Location = System::Drawing::Point(10, 230);
+	this->ObsLabel->MaximumSize = System::Drawing::Size(150, 0);
 	this->ObsLabel->Name = L"ObsLabel";
-	this->ObsLabel->Size = System::Drawing::Size(100, 22);
+	this->ObsLabel->Size = System::Drawing::Size(127, 44);
 	this->ObsLabel->TabIndex = 5;
-	this->ObsLabel->Text = L"Observatii:";
+	this->ObsLabel->Text = L"Observatii de adaugat:";
+	this->ObsLabel->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
 	// 
 	// GenderLabel
 	// 
@@ -196,7 +199,7 @@ void MedicalInformationSystem::EditPatient::InitializeComponent(void)
 	this->PObservations->Location = System::Drawing::Point(140, 231);
 	this->PObservations->Multiline = true;
 	this->PObservations->Name = L"PObservations";
-	this->PObservations->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
+	this->PObservations->ScrollBars = System::Windows::Forms::ScrollBars::Both;
 	this->PObservations->Size = System::Drawing::Size(577, 239);
 	this->PObservations->TabIndex = 17;
 	// 
@@ -204,6 +207,7 @@ void MedicalInformationSystem::EditPatient::InitializeComponent(void)
 	// 
 	this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 	this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
+	this->AutoSize = true;
 	this->ClientSize = System::Drawing::Size(784, 561);
 	this->Controls->Add(this->PObservations);
 	this->Controls->Add(this->PSurname);
@@ -235,9 +239,9 @@ void MedicalInformationSystem::EditPatient::InitializeComponent(void)
 System::Void MedicalInformationSystem::EditPatient::EditPatient_Load(System::Object^  sender, System::EventArgs^  e) {
 	std::string processedPatientId = msclr::interop::marshal_as<std::string>(%*(this->patientId));
 	std::string stringToSend = "GET_PATIENT>" + processedPatientId;
-	char buffer[5000], bufferRecv[100000];
+	char buffer[100000], bufferRecv[100000];
 	sprintf(buffer, "%s", stringToSend.c_str());
-	send(this->sock, buffer, 5000, 0);
+	send(this->sock, buffer, 100000, 0);
 	recv(this->sock, bufferRecv, 100000, 0);
 	std::string responseToProcess(bufferRecv);
 	this->currentPatient = new MedicalInformationSystem::Patient();
@@ -250,39 +254,95 @@ System::Void MedicalInformationSystem::EditPatient::EditPatient_Load(System::Obj
 	System::String ^surname = gcnew System::String(this->currentPatient->getSurname().c_str());
 	System::String ^birthdate = gcnew System::String(this->currentPatient->getBirthday().c_str());
 	System::String ^gender = gcnew System::String(this->currentPatient->getGender().c_str());
-	System::String ^obs = gcnew System::String(this->currentPatient->getObservations().c_str());
 	this->PName->Text = name;
 	this->PSurname->Text = surname;
 	this->PBirthday->Text = birthdate;
 	this->PGender->Text = gender;
-	this->PObservations->Text = obs;
 }
 
 System::Void MedicalInformationSystem::EditPatient::SaveButt_Click(System::Object^  sender, System::EventArgs^  e) {
-	this->Hide();
-	MedicalInformationSystem::MainView mainView(
-		this->sock,
-		new MedicalInformationSystem::Doctor(
-			this->currentDoctor->getId(),
-			this->currentDoctor->getUsername(),
-			this->currentDoctor->getPassword(),
-			{}
-		)
-	);
-	mainView.ShowDialog();
+	std::string processedPatientId = msclr::interop::marshal_as<std::string>(%*(this->patientId));
+	std::string stringToSend = "GET_PATIENT>" + processedPatientId;
+	char buffer[100000], bufferRecv[100000];
+	sprintf(buffer, "%s", stringToSend.c_str());
+	send(this->sock, buffer, 100000, 0);
+	recv(this->sock, bufferRecv, 100000, 0);
+	std::string responseToProcess(bufferRecv);
+	MedicalInformationSystem::Patient *serverData = new MedicalInformationSystem::Patient();
+	serverData->fromString(responseToProcess);
+	bool isAborted = false;
+	if (
+		this->currentPatient->getName() != serverData->getName() ||
+		this->currentPatient->getSurname() != serverData->getSurname() ||
+		this->currentPatient->getGender() != serverData->getGender() ||
+		this->currentPatient->getBirthday() != serverData->getBirthday()
+	) {
+		if (MessageBox::Show(
+			"Exista modificari ale datelor esentiale ce vor fi suprascrise! Doriti sa continuati?",
+			"Data changes!",
+			MessageBoxButtons::YesNo,
+			MessageBoxIcon::Warning
+		) == System::Windows::Forms::DialogResult::Yes) {
+			std::string updatedObservations = serverData->getObservations() +
+				"\r\n" +
+				this->currentDoctor->getUsername() +
+				":" +
+				msclr::interop::marshal_as<std::string>(this->PObservations->Text);
+			serverData->setName(msclr::interop::marshal_as<std::string>(this->PName->Text));
+			serverData->setSurname(msclr::interop::marshal_as<std::string>(this->PSurname->Text));
+			serverData->setGender(msclr::interop::marshal_as<std::string>(this->PGender->Text));
+			serverData->setBirthday(msclr::interop::marshal_as<std::string>(this->PBirthday->Text));
+			serverData->setObservations(updatedObservations);
+			std::string stringToSend = "UPDATE_PATIENT>" + serverData->toString();
+			char sentPatientData[100000], responseRecieved[100000];
+			sprintf(sentPatientData, "%s", stringToSend.c_str());
+			send(this->sock, sentPatientData, 100000, 0);
+			recv(this->sock, responseRecieved, 100000, 0);
+			System::Diagnostics::Debug::WriteLine(gcnew System::String(responseRecieved));
+		}
+		else {
+			this->currentPatient->setName(serverData->getName());
+			this->currentPatient->setSurname(serverData->getSurname());
+			this->currentPatient->setGender(serverData->getGender());
+			this->currentPatient->setBirthday(serverData->getBirthday());
+			System::String ^name = gcnew System::String(serverData->getName().c_str());
+			System::String ^surname = gcnew System::String(serverData->getSurname().c_str());
+			System::String ^birthdate = gcnew System::String(serverData->getBirthday().c_str());
+			System::String ^gender = gcnew System::String(serverData->getGender().c_str());
+			this->PName->Text = name;
+			this->PSurname->Text = surname;
+			this->PBirthday->Text = birthdate;
+			this->PGender->Text = gender;
+			isAborted = true;
+		}
+	}
+	else {
+		std::string updatedObservations = serverData->getObservations() +
+			"\r\n" +
+			this->currentDoctor->getUsername() +
+			":" +
+			msclr::interop::marshal_as<std::string>(this->PObservations->Text);
+		serverData->setName(msclr::interop::marshal_as<std::string>(this->PName->Text));
+		serverData->setSurname(msclr::interop::marshal_as<std::string>(this->PSurname->Text));
+		serverData->setGender(msclr::interop::marshal_as<std::string>(this->PGender->Text));
+		serverData->setBirthday(msclr::interop::marshal_as<std::string>(this->PBirthday->Text));
+		serverData->setObservations(updatedObservations);
+		std::string stringToSend = "UPDATE_PATIENT>" + serverData->toString();
+		char sentPatientData[100000], responseRecieved[100000];
+		sprintf(sentPatientData, "%s", stringToSend.c_str());
+		send(this->sock, sentPatientData, 100000, 0);
+		recv(this->sock, responseRecieved, 100000, 0);
+		System::Diagnostics::Debug::WriteLine(gcnew System::String(responseRecieved));
+	}
+
+	if (!isAborted) {
+		this->Close();
+		this->parent->Show();
+	}
 }
 
 System::Void MedicalInformationSystem::EditPatient::BackButt_Click(System::Object^  sender, System::EventArgs^  e)
 {
-	this->Hide();
-	MedicalInformationSystem::MainView mainView(
-		this->sock,
-		new MedicalInformationSystem::Doctor(
-			this->currentDoctor->getId(),
-			this->currentDoctor->getUsername(),
-			this->currentDoctor->getPassword(),
-			{}
-		)
-	);
-	mainView.ShowDialog();
+	this->Close();
+	this->parent->Show();
 }

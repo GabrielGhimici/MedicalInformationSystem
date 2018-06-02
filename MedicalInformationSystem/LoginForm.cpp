@@ -119,6 +119,7 @@ void MedicalInformationSystem::LoginForm::InitializeComponent(void)
 	this->Controls->Add(this->Password);
 	this->Controls->Add(this->Username);
 	this->Controls->Add(this->TitleLabel);
+	this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
 	this->Name = L"LoginForm";
 	this->ShowIcon = false;
 	this->SizeGripStyle = System::Windows::Forms::SizeGripStyle::Hide;
@@ -131,9 +132,9 @@ void MedicalInformationSystem::LoginForm::InitializeComponent(void)
 
 System::Void MedicalInformationSystem::LoginForm::LoginButton_Click(System::Object^  sender, System::EventArgs^  e) {
 	System::String ^stringToSend = "LOGIN>Username~" + this->Username->Text + "#Password~" + this->Password->Text;
-	char buffer[5000], bufferRecv[5000];
+	char buffer[100000], bufferRecv[5000];
 	sprintf(buffer, "%s", stringToSend);
-	send(this->sock, buffer, 5000, 0);
+	send(this->sock, buffer, 100000, 0);
 	recv(this->sock, bufferRecv, 5000, 0);
 	System::String ^errorText = gcnew System::String(bufferRecv);
 	std::string checkErrorString = msclr::interop::marshal_as<std::string>(errorText);

@@ -43,7 +43,7 @@ int main(array<System::String^>^ args) {
 		return 0;
 	}
 
-	char ptr[100];
+	char ptr[100000];
 	for (int i = 0; i<3; i++)
 	{
 		sprintf(ptr, "Testing Connection - Heartbeat %d", i);

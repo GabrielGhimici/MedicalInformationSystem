@@ -270,9 +270,9 @@ void MedicalInformationSystem::MainView::InitializeComponent(void)
 System::Void MedicalInformationSystem::MainView::MainView_Load(System::Object^  sender, System::EventArgs^  e)
 {
 	std::string stringToSend = "GET_INITIAL_DATA>" + this->currentDoctor->getId();
-	char buffer[5000], bufferRecv[100000];
+	char buffer[100000], bufferRecv[100000];
 	sprintf(buffer, "%s", stringToSend.c_str());
-	send(this->sock, buffer, 5000, 0);
+	send(this->sock, buffer, 100000, 0);
 	recv(this->sock, bufferRecv, 100000, 0);
 	std::string responseToProcess(bufferRecv);
 	std::vector<std::string> patientInfo = MedicalInformationSystem::Tokenizer::tokenize(responseToProcess, '^');
@@ -320,7 +320,6 @@ System::Void MedicalInformationSystem::MainView::PrevButt_Click(System::Object^ 
 
 System::Void MedicalInformationSystem::MainView::EditButt_Click(System::Object^  sender, System::EventArgs^  e)
 {
-
 	this->Hide();
 	MedicalInformationSystem::EditPatient editPatient(
 		this->sock,
@@ -330,9 +329,27 @@ System::Void MedicalInformationSystem::MainView::EditButt_Click(System::Object^ 
 			this->currentDoctor->getPassword(),
 			{}
 		),
-		this->currentDoctor->getPatients()[this->patientIndex].getId()
+		this->currentDoctor->getPatients()[this->patientIndex].getId(),
+		this
 	);
 	editPatient.ShowDialog();
+	std::string stringToSend = "GET_INITIAL_DATA>" + this->currentDoctor->getId();
+	char buffer[100000], bufferRecv[100000];
+	sprintf(buffer, "%s", stringToSend.c_str());
+	send(this->sock, buffer, 100000, 0);
+	recv(this->sock, bufferRecv, 100000, 0);
+	std::string responseToProcess(bufferRecv);
+	std::vector<std::string> patientInfo = MedicalInformationSystem::Tokenizer::tokenize(responseToProcess, '^');
+	std::vector<MedicalInformationSystem::Patient> patients = {};
+	for (std::string s : patientInfo) {
+		MedicalInformationSystem::Patient p = MedicalInformationSystem::Patient();
+		p.fromString(s);
+		patients.push_back(p);
+	}
+	this->currentDoctor->setPatients(patients);
+	System::String ^loggedAsText = gcnew System::String(("Autentificat ca: " + this->currentDoctor->getUsername()).c_str());
+	this->LoggedAs->Text = loggedAsText;
+	this->setupPatientView();
 }
 
 System::Void MedicalInformationSystem::MainView::setupPatientView() {

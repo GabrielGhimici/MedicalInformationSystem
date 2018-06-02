@@ -1,4 +1,6 @@
 #include "Doctor.h"
+#include "Tokenizer.h"
+#include "Patient.h"
 
 MedicalInformationSystemServer::Doctor::Doctor() {}
 
@@ -61,4 +63,22 @@ std::string MedicalInformationSystemServer::Doctor::toString() {
 	}
 	patients = patients.substr(0, patients.length() - 1);
 	return id + "#" + username + "#" + password + "#" + patients;
+}
+
+void MedicalInformationSystemServer::Doctor::fromString(std::string docString) {
+	std::vector<std::string> doctorTokens = MedicalInformationSystemServer::Tokenizer::tokenize(docString, '#');
+	if (doctorTokens.size() < 4) {
+		std::cout << ">>> Imposible to populate doctor..." << std::endl;
+		return;
+	}
+	this->id = MedicalInformationSystemServer::Tokenizer::tokenize(doctorTokens[0], '~')[1];
+	this->username = MedicalInformationSystemServer::Tokenizer::tokenize(doctorTokens[1], '~')[1];
+	this->password = MedicalInformationSystemServer::Tokenizer::tokenize(doctorTokens[2], '~')[1];
+	this->patients = {};
+	std::vector<std::string> patientsInfo = MedicalInformationSystemServer::Tokenizer::tokenize(doctorTokens[3], '~');
+	for (std::string s : patientsInfo) {
+		MedicalInformationSystemServer::Patient *p = new MedicalInformationSystemServer::Patient();
+		p->fromString(s);
+		this->patients.push_back(p->getId());
+	}
 }

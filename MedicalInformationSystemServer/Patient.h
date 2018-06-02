@@ -33,6 +33,7 @@ namespace MedicalInformationSystemServer {
 		void setObservations(std::string observations);
 		std::string getObservations();
 		std::string toString();
+		void fromString(std::string patientData);
 	};
 }
 #endif
