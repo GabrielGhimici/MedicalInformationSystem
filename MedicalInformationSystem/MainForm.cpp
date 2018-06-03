@@ -22,7 +22,12 @@ int main(array<System::String^>^ args) {
 
 	if (iResult)
 	{
-		System::Diagnostics::Debug::WriteLine("WSA startup failed");
+		System::Windows::Forms::MessageBox::Show(
+			"Conexiunea bazata pe websocketi nu a putut fi creata. Va rugam incercati din nou!",
+			"WSA startup failed",
+			System::Windows::Forms::MessageBoxButtons::OK,
+			System::Windows::Forms::MessageBoxIcon::Information
+		);
 		return 0;
 	}
 
@@ -31,7 +36,12 @@ int main(array<System::String^>^ args) {
 
 	if (sock == INVALID_SOCKET)
 	{
-		System::Diagnostics::Debug::WriteLine("Invalid socket");
+		System::Windows::Forms::MessageBox::Show(
+			"Conexiunea bazata pe websocketi nu a putut fi creata. Va rugam incercati din nou!",
+			"Invalid socket",
+			System::Windows::Forms::MessageBoxButtons::OK,
+			System::Windows::Forms::MessageBoxIcon::Information
+		);
 		return 0;
 	}
 
@@ -39,7 +49,12 @@ int main(array<System::String^>^ args) {
 
 	if (iResult)
 	{
-		System::Diagnostics::Debug::WriteLine("Connect failed " + WSAGetLastError());
+		System::Windows::Forms::MessageBox::Show(
+			"Conexiunea cu server-ul nu a putut fi realizata. Va rugam incercati din nou!",
+			"Connect failed " + WSAGetLastError(),
+			System::Windows::Forms::MessageBoxButtons::OK,
+			System::Windows::Forms::MessageBoxIcon::Information
+		);
 		return 0;
 	}
 

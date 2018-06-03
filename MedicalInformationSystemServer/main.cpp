@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 #include <winsock2.h>
 #include <iostream>
 #include <vector>
@@ -13,6 +14,11 @@
 
 #include "Tokenizer.h"
 
+CONDITION_VARIABLE condition;
+CRITICAL_SECTION lock;
+int clientsToUpdate;
+int clientsUpdating;
+int clientsReading;
 std::vector<MedicalInformationSystemServer::Doctor> doctors;
 std::map<std::string, MedicalInformationSystemServer::Patient> patients;
 
@@ -63,6 +69,9 @@ int main(int argc, char* argv[])
 	address.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
 
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+
+	InitializeCriticalSection(&lock);
+	InitializeConditionVariable(&condition);
 
 	if (iResult)
 	{
@@ -189,6 +198,12 @@ unsigned int __stdcall ServClient(void *data)
 			send(Client, infoResponse, 100000, 0);
 			break;
 		case GET_PATIENT:
+			EnterCriticalSection(&lock);
+			while (clientsToUpdate) {
+				SleepConditionVariableCS(&condition, &lock, INFINITE);
+			}
+			clientsReading++;
+			LeaveCriticalSection(&lock);
 			std::cout << ">>> Get patient info for: " << messageTokens[1].c_str() << std::endl;
 			patientInfo = "NONE";
 			if (patients.find(messageTokens[1]) != patients.end()) {
@@ -198,8 +213,19 @@ unsigned int __stdcall ServClient(void *data)
 			sprintf(infoResponse, "%s", patientInfo.c_str());
 			std::cout << ">>> Response send... PATIENT INFO" << std::endl;
 			send(Client, infoResponse, 100000, 0);
+			EnterCriticalSection(&lock);
+			clientsReading--;
+			WakeAllConditionVariable(&condition);
+			LeaveCriticalSection(&lock);
 			break;
 		case UPDATE_PATIENT:
+			EnterCriticalSection(&lock);
+			clientsToUpdate++;
+			while (clientsReading || clientsUpdating) {
+				SleepConditionVariableCS(&condition, &lock, INFINITE);
+			}
+			clientsUpdating++;
+			LeaveCriticalSection(&lock);
 			std::cout << ">>> Update patient info with: " << messageTokens[1].c_str() << std::endl;
 			patientData = messageTokens[1];
 			char updatePatientResponse[100000];
@@ -223,7 +249,11 @@ unsigned int __stdcall ServClient(void *data)
 				std::cout << ">>> Response send... PATIENT UPDATE[SUCESS]" << std::endl;
 				send(Client, updatePatientResponse, 100000, 0);
 			}
-
+			EnterCriticalSection(&lock);
+			clientsUpdating--;
+			clientsToUpdate--;
+			WakeAllConditionVariable(&condition);
+			LeaveCriticalSection(&lock);
 			break;
 		default:
 			break;
@@ -338,6 +368,7 @@ int persistPatient(MedicalInformationSystemServer::Patient *p) {
 		pat << p->getBirthday() << std::endl;
 		pat << p->getGender() << std::endl;
 		pat << p->getObservations();
+		pat.close();
 		return 0;
 	}
 	else

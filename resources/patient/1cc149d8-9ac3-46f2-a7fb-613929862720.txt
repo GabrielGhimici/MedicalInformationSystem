@@ -2,6 +2,7 @@ Vasile
 Ion
 11 Iunie 1977
 Masculin
-Nimic Important
-FirstDoctor:CevaNou
-CevaNou2
+Nimic ImportantFirstDoctor:CevaNouCevaNou2
+SecondDoctor:Update1
+FirstDoctor:Update2
+SecondDoctor:Update3
